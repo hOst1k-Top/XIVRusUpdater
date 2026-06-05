@@ -1,0 +1,29 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using XIVRusUpdater.Services;
+
+namespace XIVRusUpdater.Utils.States;
+
+public sealed class UpdaterState
+{
+    public IPenumbraMod mod { get; set; } = new IPenumbraMod("XIV Rus", "https://xivrus.ru/");
+    public DownloadState Download { get; set; } = new DownloadState();
+
+    public NetworkService.AvailabilityStatus Availability { get; set; }
+        = NetworkService.AvailabilityStatus.Disabled;
+
+    public bool PenumbraEnabled { get; set; }
+
+    public bool ModInstalled { get; set; }
+
+    public string InstalledVersion { get; set; } = "";
+
+    public string RemoteVersion { get; set; } = "";
+
+    public bool UpdateAvailable { get; set; }
+
+    public DateTime LastCheck { get; set; }
+
+    public string? LastError { get; set; }
+}
