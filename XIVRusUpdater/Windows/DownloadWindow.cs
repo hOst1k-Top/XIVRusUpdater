@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
-using XIVRus;
+using XIVRusUpdater;
 
 namespace XIVRusUpdater.Windows;
 
@@ -23,7 +23,7 @@ public class DownloadWindow : Window
     {
         var download = Plugin.State.Download;
 
-        ImGui.Text(download.FileName);
+        ImGui.TextWrapped(download.FileName);
 
         ImGui.ProgressBar(
             download.Progress,
@@ -35,7 +35,7 @@ public class DownloadWindow : Window
             $"{download.DownloadedBytes / 1024f / 1024f:F1} MB / " +
             $"{download.TotalBytes / 1024f / 1024f:F1} MB");
 
-        ImGui.Text(
+        ImGui.TextWrapped(
             $"Current source: {download.CurrentSource}");
 
         ImGui.Text(

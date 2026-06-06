@@ -14,7 +14,7 @@ using XIVRusUpdater.Services;
 using XIVRusUpdater.Utils.States;
 using XIVRusUpdater.Windows.Dialogs;
 
-namespace XIVRus.Windows;
+namespace XIVRusUpdater.Windows;
 
 public class MainWindow : Window, IDisposable
 {

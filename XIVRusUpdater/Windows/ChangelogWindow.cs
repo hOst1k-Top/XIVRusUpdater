@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
-using XIVRus;
+using XIVRusUpdater;
 
 namespace XIVRusUpdater.Windows;
 
@@ -50,6 +50,7 @@ public sealed class ChangelogWindow : Window, IDisposable
 
         if (ImGui.Button("Accept", new Vector2(180, 0)))
         {
+            showReloadConfirm = false;
             Plugin.State.ShowChangelog = false;
         }
 

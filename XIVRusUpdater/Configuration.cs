@@ -1,7 +1,7 @@
 using Dalamud.Configuration;
 using System;
 
-namespace XIVRus;
+namespace XIVRusUpdater;
 
 [Serializable]
 public class Configuration : IPluginConfiguration

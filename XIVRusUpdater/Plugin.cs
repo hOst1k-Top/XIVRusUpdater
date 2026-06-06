@@ -9,12 +9,12 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using XIVRus.Windows;
+using XIVRusUpdater.Windows;
 using XIVRusUpdater.Services;
 using XIVRusUpdater.Utils.States;
 using XIVRusUpdater.Windows;
 
-namespace XIVRus;
+namespace XIVRusUpdater;
 
 public sealed class Plugin : IDalamudPlugin
 {

@@ -4,7 +4,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 
-namespace XIVRus.Windows;
+namespace XIVRusUpdater.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {
@@ -53,7 +53,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.Spacing();
 
             int interval = configuration.UpdateCheckIntervalMinutes;
-            if(ImGui.SliderInt("Check interval (minutes)", ref interval, 30, 1440))
+            if(ImGui.SliderInt("Check interval (minutes)", ref interval, 5, 1440))
             {
                 configuration.UpdateCheckIntervalMinutes = interval;
                 configuration.Save();

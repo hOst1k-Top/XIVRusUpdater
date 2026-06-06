@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Updater.DTO;
-using XIVRus;
+using XIVRusUpdater;
 using XIVRusUpdater.DTO;
 using XIVRusUpdater.Utils;
 using static XIVRusUpdater.Utils.HttpClientProgressExtensions;
