@@ -31,7 +31,7 @@ public sealed class Plugin : IDalamudPlugin
     private DateTime nextRefresh;
 
 
-    public readonly WindowSystem WindowSystem = new("XIVRus Updater");
+    public readonly WindowSystem WindowSystem = new("XIV Rus Updater");
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
     private DownloadWindow DownloadWindow { get; init; }

@@ -59,7 +59,7 @@ public class MainWindow : Window, IDisposable
         {
             ImGui.BulletText($"Penumbra: {(state.PenumbraEnabled ? "Enabled" : "Disabled")}");
 
-            ImGui.BulletText($"XIVRus: {(state.ModInstalled ? "Installed" : "Not Installed")}");
+            ImGui.BulletText($"XIV Rus: {(state.ModInstalled ? "Installed" : "Not Installed")}");
 
             ImGui.BulletText($"Version: {state.InstalledVersion}");
 
@@ -98,7 +98,7 @@ public class MainWindow : Window, IDisposable
 
             using (ImRaii.Disabled(!updateAvailable || disabled))
             {
-                if (ImGui.Button("Update XIVRus", new Vector2(-1, 0)))
+                if (ImGui.Button("Update XIV Rus", new Vector2(-1, 0)))
                 {
                     downloadTask ??= Plugin.networkService.DownloadLatestVersionAsync();
                 }
@@ -161,7 +161,7 @@ public class MainWindow : Window, IDisposable
         {
             case OverallStatus.Ok:
                 color = ImGuiColors.HealerGreen;
-                text = "XIVRus is up to date";
+                text = "XIV Rus is up to date";
                 break;
 
             case OverallStatus.UpdateAvailable:
@@ -171,12 +171,12 @@ public class MainWindow : Window, IDisposable
 
             case OverallStatus.Warning:
                 color = ImGuiColors.DalamudYellow;
-                text = "XIVRus works but may be unstable on current patch";
+                text = "XIV Rus works but may be unstable on current patch";
                 break;
 
             case OverallStatus.Disabled:
                 color = ImGuiColors.DalamudRed;
-                text = "XIVRus temporarily disabled";
+                text = "XIV Rus temporarily disabled";
                 break;
 
             default:

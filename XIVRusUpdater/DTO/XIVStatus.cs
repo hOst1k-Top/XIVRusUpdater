@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace XIVRusUpdater.DTO;
+namespace 
+    Updater.DTO;
 
 internal class XIVStatus
 {

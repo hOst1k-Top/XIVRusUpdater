@@ -10,7 +10,7 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly Configuration configuration;
 
-    public ConfigWindow(Plugin plugin) : base("XIVRus Config###XIVConfig")
+    public ConfigWindow(Plugin plugin) : base("XIV Rus Config###XIVConfig")
     {
         SizeConstraints = new WindowSizeConstraints
         {

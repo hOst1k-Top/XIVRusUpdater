@@ -12,7 +12,7 @@ namespace XIVRusUpdater.Windows;
 public class DownloadWindow : Window
 {
     public DownloadWindow()
-        : base("Downloading XIVRus###DownloadWindow")
+        : base("Downloading XIV Rus###DownloadWindow")
     {
         RespectCloseHotkey = false;
     }
