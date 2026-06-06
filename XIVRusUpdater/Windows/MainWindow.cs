@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Colors;
@@ -10,8 +6,13 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Lumina.Excel.Sheets;
+using System;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
 using XIVRusUpdater.Services;
 using XIVRusUpdater.Utils.States;
+using XIVRusUpdater.Windows.Dialogs;
 
 namespace XIVRus.Windows;
 
@@ -21,6 +22,9 @@ public class MainWindow : Window, IDisposable
     private readonly Plugin plugin;
     private Task? refreshTask;
     private Task? downloadTask;
+
+    private readonly ConfirmationPopup reloadPopup = new ConfirmationPopup("ReloadPopup");
+
     private enum OverallStatus
     {
         Ok,
@@ -38,6 +42,8 @@ public class MainWindow : Window, IDisposable
             MinimumSize = new Vector2(375, 330),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
+
+        reloadPopup.OnConfirm = Plugin.RestartGame;
 
         this.goatImagePath = goatImagePath;
         this.plugin = plugin;
@@ -108,6 +114,13 @@ public class MainWindow : Window, IDisposable
             {
                 downloadTask = null;
             }
+
+            if(ImGui.Button("Relaod game", new Vector2(-1, 0)))
+            {
+                reloadPopup.Open();
+            }
+
+            reloadPopup.Draw();
 
             if (ImGui.Button("Open Settings", new Vector2(-1, 0)))
             {

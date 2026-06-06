@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Updater.DTO;
 using XIVRus;
 using XIVRusUpdater.DTO;
 using XIVRusUpdater.Utils;
@@ -93,6 +94,8 @@ public class NetworkService
         var response = await GetReleaseAsync();
         if (response == default(GithubRelease)) return null;
 
+        Plugin.State.LastChangelog = response.Body;
+
         return response.Name;
     }
 
@@ -149,6 +152,8 @@ public class NetworkService
             return;
 
         InstallDownloadedVersionAsync(tempFile);
+
+        Plugin.State.ShowChangelog = true;
     }
 
     public void InstallDownloadedVersionAsync(string filePath)
@@ -263,6 +268,7 @@ public class NetworkService
         }
         finally
         {
+            Plugin.State.ShowChangelog = true;
             state.IsDownloading = false;
         }
     }
