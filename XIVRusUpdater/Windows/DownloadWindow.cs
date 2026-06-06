@@ -29,9 +29,14 @@ public class DownloadWindow : Window
             download.Progress,
             new Vector2(-1, 24));
 
+        ImGui.Spacing();
+
         ImGui.Text(
             $"{download.DownloadedBytes / 1024f / 1024f:F1} MB / " +
             $"{download.TotalBytes / 1024f / 1024f:F1} MB");
+
+        ImGui.Text(
+            $"Current source: {download.CurrentSource}");
 
         ImGui.Text(
             $"Speed: {download.SpeedMBps:F2} MB/s");

@@ -20,5 +20,5 @@ public sealed class DownloadState
 
     public double SpeedMBps { get; set; }
 
-    public float Progress => TotalBytes == 0 ? 0 : DownloadedBytes / TotalBytes;
+    public float Progress => TotalBytes == 0 ? 0 : Convert.ToSingle(DownloadedBytes) / TotalBytes;
 }

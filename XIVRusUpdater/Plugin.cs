@@ -45,7 +45,6 @@ public sealed class Plugin : IDalamudPlugin
 
         Framework.Update += OnUpdate;
 
-        // You might normally want to embed resources and load them from the manifest stream
         var iconPath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "icon.png");
 
         ConfigWindow = new ConfigWindow(this);

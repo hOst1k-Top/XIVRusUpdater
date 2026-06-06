@@ -234,6 +234,7 @@ public class NetworkService
         var state = Plugin.State.Download;
 
         state.IsDownloading = true;
+        state.CurrentSource = url;
         state.Error = null;
         state.FileName = Path.GetFileName(targetFile);
         state.DownloadedBytes = 0;
