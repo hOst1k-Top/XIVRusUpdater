@@ -107,7 +107,7 @@ public class NetworkService
 
         plugin.Configuration.LastSuccessfulUpdate = DateTime.Now;
 
-        if (Plugin.State.ModInstalled && Plugin.State.Availability == AvailabilityStatus.Disabled && plugin.Configuration.AutoDisableOnUnavailable)
+        if (Plugin.State.ModInstalled && Plugin.State.Availability == AvailabilityStatus.Disabled)
         {
             Plugin.State.mod.Enabled = false;
         }

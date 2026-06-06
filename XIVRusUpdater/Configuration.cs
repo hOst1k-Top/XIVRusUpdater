@@ -18,19 +18,11 @@ public class Configuration : IPluginConfiguration
 
     #region Updates
 
-    public bool EnableUpdateChecks { get; set; } = true;
-
-    public bool CheckOnPluginLoad { get; set; } = true;
-
-    public bool CheckOnLogin { get; set; } = true;
-
     public int UpdateCheckIntervalMinutes { get; set; } = 60;
 
     public bool AutoDownloadUpdates { get; set; } = true;
 
     public bool AutoInstallUpdates { get; set; } = true;
-
-    public bool AutoDisableOnUnavailable { get; set; } = true;
 
     #endregion
 

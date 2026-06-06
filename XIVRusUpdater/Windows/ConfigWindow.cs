@@ -50,30 +50,10 @@ public class ConfigWindow : Window, IDisposable
         {
             ImGui.BeginChild("UpdateSettings", new Vector2(0, 180), true);
 
-            var autoUpdate = configuration.EnableUpdateChecks;
-            var onPluginLoad = configuration.CheckOnPluginLoad;
-            var onLogin = configuration.CheckOnLogin;
-
-            if(ImGui.Checkbox("Enable update checks", ref autoUpdate))
-            {
-                configuration.EnableUpdateChecks = autoUpdate;
-                configuration.Save();
-            }
-            if(ImGui.Checkbox("Check on plugin load", ref onPluginLoad))
-            {
-                configuration.CheckOnPluginLoad = onPluginLoad;
-                configuration.Save();
-            }
-            if(ImGui.Checkbox("Check on login", ref onLogin))
-            {
-                configuration.CheckOnLogin = onLogin;
-                configuration.Save();
-            }
-
             ImGui.Spacing();
 
             int interval = configuration.UpdateCheckIntervalMinutes;
-            if(ImGui.SliderInt("Check interval (minutes)", ref interval, 5, 1440))
+            if(ImGui.SliderInt("Check interval (minutes)", ref interval, 30, 1440))
             {
                 configuration.UpdateCheckIntervalMinutes = interval;
                 configuration.Save();
@@ -83,8 +63,7 @@ public class ConfigWindow : Window, IDisposable
 
             var autoDownload = configuration.AutoDownloadUpdates;
             var autoInstall = configuration.AutoInstallUpdates;
-            var autoDisable = configuration.AutoDisableOnUnavailable;
-
+            
             if(ImGui.Checkbox("Auto download updates", ref autoDownload))
             {
                 configuration.AutoDownloadUpdates = autoDownload;
@@ -93,11 +72,6 @@ public class ConfigWindow : Window, IDisposable
             if(ImGui.Checkbox("Auto install updates", ref autoInstall))
             {
                 configuration.AutoInstallUpdates = autoInstall;
-                configuration.Save();
-            }
-            if (ImGui.Checkbox("Disable mod while Unavailable", ref autoDisable))
-            {
-                configuration.AutoDisableOnUnavailable = autoDisable;
                 configuration.Save();
             }
 

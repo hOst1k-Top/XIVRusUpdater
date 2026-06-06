@@ -72,10 +72,7 @@ public sealed class Plugin : IDalamudPlugin
 
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
 
-        if (Configuration.CheckOnPluginLoad)
-        {
-            _ = networkService.CheckForUpdates();
-        }
+        _ = networkService.CheckForUpdates();
     }
 
     public void Dispose()
