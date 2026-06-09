@@ -74,6 +74,8 @@ public class MainWindow : Window, IDisposable
 
         if (ImGui.CollapsingHeader("Version Information", ImGuiTreeNodeFlags.DefaultOpen))
         {
+            ImGui.Text($"Game Version: {Plugin.CurrentGameVersion}");
+
             ImGui.Text($"Installed: {state.InstalledVersion}");
 
             ImGui.Text($"Latest: {plugin.Configuration.LastKnownRemoteVersion}");
@@ -154,9 +156,6 @@ public class MainWindow : Window, IDisposable
         if (state.Availability == NetworkService.AvailabilityStatus.Disabled)
             return OverallStatus.Disabled;
 
-        if (state.Availability == NetworkService.AvailabilityStatus.Warning)
-            return OverallStatus.Warning;
-
         if (plugin.Configuration.LastKnownRemoteVersion != plugin.Configuration.LastInstalledVersion)
             return OverallStatus.UpdateAvailable;
 
@@ -180,11 +179,6 @@ public class MainWindow : Window, IDisposable
             case OverallStatus.UpdateAvailable:
                 color = ImGuiColors.DalamudYellow;
                 text = "Update available";
-                break;
-
-            case OverallStatus.Warning:
-                color = ImGuiColors.DalamudYellow;
-                text = "XIV Rus works but may be unstable on current patch";
                 break;
 
             case OverallStatus.Disabled:
