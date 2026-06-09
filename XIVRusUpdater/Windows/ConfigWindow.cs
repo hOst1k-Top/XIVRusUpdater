@@ -80,23 +80,26 @@ public class ConfigWindow : Window, IDisposable
 
         if (ImGui.CollapsingHeader("Tester Access"))
         {
-            ImGui.BeginChild("TesterSettings", new Vector2(0, 80), true);
+            ImGui.BeginChild("TesterSettings", new Vector2(0, 120), true);
 
             if (ImGui.BeginCombo("Channel", configuration.Channel.ToString()))
             {
                 foreach (var channel in Enum.GetValues<UpdateChannel>())
                 {
+                    bool isTestChannel = channel != UpdateChannel.Stable;
+
+                    if (isTestChannel && !configuration.TesterHumanCheck)
+                        continue;
+
                     bool selected = channel == configuration.Channel;
 
                     if (ImGui.Selectable(channel.ToString(), selected))
                     {
                         configuration.Channel = channel;
+                        configuration.Save();
                     }
 
-                    if (selected)
-                    {
-                        ImGui.SetItemDefaultFocus();
-                    }
+                    if (selected) ImGui.SetItemDefaultFocus();
                 }
 
                 ImGui.EndCombo();
@@ -104,10 +107,13 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Separator();
 
-            string testerKey = configuration.TesterKey;
-            if(ImGui.InputText("Tester Key", ref testerKey, 128))
+            bool testerHumanCheck = configuration.TesterHumanCheck;
+
+            ImGui.TextWrapped("Test versions may contain unverified translations, incomplete changes, and unexpected issues. The game or localization may behave incorrectly.");
+
+            if (ImGui.Checkbox("I understand the risks of using test versions.", ref testerHumanCheck))
             {
-                configuration.TesterKey = testerKey;
+                configuration.TesterHumanCheck = testerHumanCheck;
                 configuration.Save();
             }
 

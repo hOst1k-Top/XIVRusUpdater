@@ -141,13 +141,13 @@ public class MainWindow : Window, IDisposable
             ImGui.SameLine();
             ImGui.Text(plugin.Configuration.Channel.ToString());
 
-            ImGui.TextDisabled("Tester Key:");
+            ImGui.TextDisabled("Tester Access Allowance:");
             ImGui.SameLine();
 
-            if (string.IsNullOrEmpty(plugin.Configuration.TesterKey))
-                ImGui.TextColored(ImGuiColors.DalamudYellow, "Not configured");
+            if (!plugin.Configuration.TesterHumanCheck)
+                ImGui.TextColored(ImGuiColors.DalamudYellow, "Not Allowed");
             else
-                ImGui.TextColored(ImGuiColors.HealerGreen, "Configured");
+                ImGui.TextColored(ImGuiColors.HealerGreen, "Allowed");
         }
     }
 
