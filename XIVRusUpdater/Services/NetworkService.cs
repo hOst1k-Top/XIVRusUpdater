@@ -71,7 +71,7 @@ public class NetworkService
         var response = await GetBranchStatus();
         if (response == default(XIVStatus)) return null;
 
-        /// Plugin.State.LastChangelog = response.;
+        Plugin.State.LastChangelog = response.Changelog;
 
         return response.RusVersion;
     }

@@ -11,8 +11,11 @@ public class XIVStatus
     public string GameVersion { get; set; } = string.Empty;
 
     [JsonProperty("urls")]
-    public List<string> Urls { get; set; }
+    public List<string> Urls { get; set; } = new List<string>();
 
     [JsonProperty("version")]
-    public string RusVersion { get; set; } = string.Empty;
+    public string? RusVersion { get; set; }
+
+    [JsonProperty("changelog")]
+    public string? Changelog { get; set; }
 }

@@ -88,6 +88,11 @@ public class MainWindow : Window, IDisposable
                     : plugin.Configuration.LastUpdateCheck.ToString("G"));
         }
 
+        if (ImGui.CollapsingHeader("Last changelog", ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            ImGui.TextWrapped(Plugin.State.LastChangelog ?? "No changelog available.");
+        }
+
         if (ImGui.CollapsingHeader("Actions", ImGuiTreeNodeFlags.DefaultOpen))
         {
             if (ImGui.Button("Refresh", new Vector2(-1, 0)))
