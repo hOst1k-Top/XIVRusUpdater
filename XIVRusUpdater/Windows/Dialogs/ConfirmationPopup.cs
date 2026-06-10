@@ -2,6 +2,8 @@ using Dalamud.Bindings.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Transactions;
+using XIVRusUpdater.Utils;
 
 namespace XIVRusUpdater.Windows.Dialogs;
 
@@ -30,9 +32,9 @@ public sealed class ConfirmationPopup
         if (!ImGui.BeginPopupModal(popupId))
             return;
 
-        ImGui.Text("Are you sure?");
+        ImGui.Text(Translations.ConfirmationQuestion);
 
-        if (ImGui.Button("Confirm"))
+        if (ImGui.Button(Translations.ConfirmationConfirm))
         {
             OnConfirm?.Invoke();
             ImGui.CloseCurrentPopup();
@@ -41,7 +43,7 @@ public sealed class ConfirmationPopup
 
         ImGui.SameLine();
 
-        if (ImGui.Button("Cancel"))
+        if (ImGui.Button(Translations.ConfirmationCancel))
         {
             OnCancel?.Invoke();
             ImGui.CloseCurrentPopup();

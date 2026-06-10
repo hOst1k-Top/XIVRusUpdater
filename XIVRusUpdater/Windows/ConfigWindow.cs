@@ -3,6 +3,7 @@ using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
+using XIVRusUpdater.Utils;
 
 namespace XIVRusUpdater.Windows;
 
@@ -10,7 +11,7 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly Configuration configuration;
 
-    public ConfigWindow(Plugin plugin) : base("XIV Rus Config###XIVConfig")
+    public ConfigWindow(Plugin plugin) : base($"{Translations.ConfigWindowTitle}###XIVConfig")
     {
         SizeConstraints = new WindowSizeConstraints
         {
@@ -25,19 +26,19 @@ public class ConfigWindow : Window, IDisposable
 
     public override void Draw()
     {
-        if (ImGui.CollapsingHeader("General", ImGuiTreeNodeFlags.DefaultOpen))
+        if (ImGui.CollapsingHeader(Translations.GeneralHeader, ImGuiTreeNodeFlags.DefaultOpen))
         {
             ImGui.BeginChild("GeneralSettings", new Vector2(0, 70), true);
 
             var showNotify = configuration.ShowNotifications;
             var showChangelog = configuration.ShowChangelogAfterUpdate;
             
-            if(ImGui.Checkbox("Show notifications", ref showNotify))
+            if(ImGui.Checkbox(Translations.ShowNotifications, ref showNotify))
             {
                 configuration.ShowNotifications = showNotify;
                 configuration.Save();
             }
-            if(ImGui.Checkbox("Show changelog after update", ref showChangelog))
+            if(ImGui.Checkbox(Translations.ShowChangelogAfterUpdate, ref showChangelog))
             {
                 configuration.ShowChangelogAfterUpdate = showChangelog;
                 configuration.Save();
@@ -46,14 +47,14 @@ public class ConfigWindow : Window, IDisposable
             ImGui.EndChild();
         }
 
-        if (ImGui.CollapsingHeader("Updates", ImGuiTreeNodeFlags.DefaultOpen))
+        if (ImGui.CollapsingHeader(Translations.UpdatesHeader, ImGuiTreeNodeFlags.DefaultOpen))
         {
             ImGui.BeginChild("UpdateSettings", new Vector2(0, 180), true);
 
             ImGui.Spacing();
 
             int interval = configuration.UpdateCheckIntervalMinutes;
-            if(ImGui.SliderInt("Check interval (minutes)", ref interval, 5, 1440))
+            if(ImGui.SliderInt(Translations.CheckInterval, ref interval, 5, 1440))
             {
                 configuration.UpdateCheckIntervalMinutes = interval;
                 configuration.Save();
@@ -64,12 +65,12 @@ public class ConfigWindow : Window, IDisposable
             var autoDownload = configuration.AutoDownloadUpdates;
             var autoInstall = configuration.AutoInstallUpdates;
             
-            if(ImGui.Checkbox("Auto download updates", ref autoDownload))
+            if(ImGui.Checkbox(Translations.AutoDownloadUpdates, ref autoDownload))
             {
                 configuration.AutoDownloadUpdates = autoDownload;
                 configuration.Save();
             }
-            if(ImGui.Checkbox("Auto install updates", ref autoInstall))
+            if(ImGui.Checkbox(Translations.AutoInstallUpdates, ref autoInstall))
             {
                 configuration.AutoInstallUpdates = autoInstall;
                 configuration.Save();
@@ -78,11 +79,11 @@ public class ConfigWindow : Window, IDisposable
             ImGui.EndChild();
         }
 
-        if (ImGui.CollapsingHeader("Tester Access"))
+        if (ImGui.CollapsingHeader(Translations.TesterHeader))
         {
             ImGui.BeginChild("TesterSettings", new Vector2(0, 120), true);
 
-            if (ImGui.BeginCombo("Channel", configuration.Channel.ToString()))
+            if (ImGui.BeginCombo(Translations.TesterChannel, configuration.Channel.ToString()))
             {
                 foreach (var channel in Enum.GetValues<UpdateChannel>())
                 {
@@ -109,9 +110,9 @@ public class ConfigWindow : Window, IDisposable
 
             bool testerHumanCheck = configuration.TesterHumanCheck;
 
-            ImGui.TextWrapped("Test versions may contain unverified translations, incomplete changes, and unexpected issues. The game or localization may behave incorrectly.");
+            ImGui.TextWrapped(Translations.TesterWarning);
 
-            if (ImGui.Checkbox("I understand the risks of using test versions.", ref testerHumanCheck))
+            if (ImGui.Checkbox(Translations.TesterAgreement, ref testerHumanCheck))
             {
                 configuration.TesterHumanCheck = testerHumanCheck;
                 configuration.Save();
@@ -120,23 +121,23 @@ public class ConfigWindow : Window, IDisposable
             ImGui.EndChild();
         }
 
-        if (ImGui.CollapsingHeader("Information"))
+        if (ImGui.CollapsingHeader(Translations.InformationHeader))
         {
             ImGui.BeginChild("InformationPanel", new Vector2(0, 140), true);
 
-            ImGui.Text("Installed Version:");
+            ImGui.Text(Translations.InstalledVersionLabel);
             ImGui.SameLine();
             ImGui.TextDisabled(configuration.LastInstalledVersion);
 
-            ImGui.Text("Latest Version:");
+            ImGui.Text(Translations.LatestVersionLabel);
             ImGui.SameLine();
             ImGui.TextDisabled(configuration.LastKnownRemoteVersion);
 
-            ImGui.Text("Last Update Check:");
+            ImGui.Text(Translations.LastUpdateCheckLabel);
             ImGui.SameLine();
             ImGui.TextDisabled(configuration.LastUpdateCheck.ToString("g"));
 
-            ImGui.Text("Last Successful Update:");
+            ImGui.Text(Translations.LastSuccessfulUpdateLabel);
             ImGui.SameLine();
             ImGui.TextDisabled(configuration.LastSuccessfulUpdate.ToString("g"));
 
