@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 using XIVRusUpdater;
+using XIVRusUpdater.Utils;
 
 namespace XIVRusUpdater.Windows;
 
@@ -15,7 +16,7 @@ public sealed class ChangelogWindow : Window, IDisposable
     private bool showReloadConfirm;
 
     public ChangelogWindow(Plugin plugin)
-        : base("XIV Rus Update Changelog###XIVRusChangelog")
+        : base($"{Translations.ChangelogWindowTitle}###XIVRusChangelog")
     {
         Flags = ImGuiWindowFlags.NoCollapse;
         RespectCloseHotkey = false;
@@ -33,14 +34,14 @@ public sealed class ChangelogWindow : Window, IDisposable
 
     public override void Draw()
     {
-        ImGui.TextUnformatted("XIV Rus has been updated.");
+        ImGui.TextUnformatted(Translations.ChangelogUpdated);
         ImGui.Separator();
 
         var contentHeight = ImGui.GetContentRegionAvail().Y - 50;
 
         ImGui.BeginChild("##changelog", new Vector2(0, contentHeight), true);
 
-        string markdown = Plugin.State.LastChangelog ?? "No changelog available.";
+        string markdown = Plugin.State.LastChangelog ?? Translations.ChangelogUnavailable;
 
         ImGui.TextWrapped(markdown);
 
@@ -48,7 +49,7 @@ public sealed class ChangelogWindow : Window, IDisposable
 
         ImGui.Spacing();
 
-        if (ImGui.Button("Accept", new Vector2(180, 0)))
+        if (ImGui.Button(Translations.AcceptButton, new Vector2(180, 0)))
         {
             showReloadConfirm = false;
             Plugin.State.ShowChangelog = false;
@@ -56,10 +57,10 @@ public sealed class ChangelogWindow : Window, IDisposable
 
         ImGui.SameLine();
 
-        if (ImGui.Button("Accept and Restart", new Vector2(180, 0)))
+        if (ImGui.Button(Translations.AcceptAndRestartButton, new Vector2(180, 0)))
         {
             showReloadConfirm = true;
-            ImGui.OpenPopup("RestartConfirm");
+            ImGui.OpenPopup(Translations.RestartConfirmTitle);
         }
 
         DrawRestartPopup();
@@ -70,20 +71,17 @@ public sealed class ChangelogWindow : Window, IDisposable
         if (!ImGui.BeginPopupModal("RestartConfirm", ref showReloadConfirm, ImGuiWindowFlags.AlwaysAutoResize))
             return;
 
-        ImGui.TextWrapped(
-            "The game client will be reloaded.\n\n" +
-            "Make sure you are not in combat, a duty, a cutscene, or performing any activity that could be interrupted."
-        );
+        ImGui.TextWrapped(Translations.RestartWarning);
 
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();
 
-        ImGui.TextWrapped("Do you understand the consequences and wish to continue?");
+        ImGui.TextWrapped(Translations.RestartQuestion);
 
         ImGui.Spacing();
 
-        if (ImGui.Button("Cancel", new Vector2(140, 0)))
+        if (ImGui.Button(Translations.CancelButton, new Vector2(140, 0)))
         {
             showReloadConfirm = false;
             ImGui.CloseCurrentPopup();
@@ -91,7 +89,7 @@ public sealed class ChangelogWindow : Window, IDisposable
 
         ImGui.SameLine();
 
-        if (ImGui.Button("I Understand", new Vector2(140, 0)))
+        if (ImGui.Button(Translations.UnderstandButton, new Vector2(140, 0)))
         {
             Plugin.State.ShowChangelog = false;
 

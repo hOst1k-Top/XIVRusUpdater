@@ -6,13 +6,14 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 using XIVRusUpdater;
+using XIVRusUpdater.Utils;
 
 namespace XIVRusUpdater.Windows;
 
 public class DownloadWindow : Window
 {
     public DownloadWindow()
-        : base("Downloading XIV Rus###DownloadWindow")
+        : base($"{Translations.DownloadTitle}###DownloadWindow")
     {
         RespectCloseHotkey = false;
     }
@@ -31,14 +32,10 @@ public class DownloadWindow : Window
 
         ImGui.Spacing();
 
-        ImGui.Text(
-            $"{download.DownloadedBytes / 1024f / 1024f:F1} MB / " +
-            $"{download.TotalBytes / 1024f / 1024f:F1} MB");
+        ImGui.Text(string.Format(Translations.DownloadTitle, download.DownloadedBytes / 1024f / 1024f, download.TotalBytes / 1024f / 1024f));
 
-        ImGui.TextWrapped(
-            $"Current source: {download.CurrentSource}");
+        ImGui.TextWrapped(string.Format(Translations.DownloadSource, download.CurrentSource));
 
-        ImGui.Text(
-            $"Speed: {download.SpeedMBps:F2} MB/s");
+        ImGui.Text(string.Format(Translations.DownloadSpeed, download.SpeedMBps));
     }
 }

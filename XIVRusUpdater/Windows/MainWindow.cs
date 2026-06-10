@@ -1,3 +1,4 @@
+using CheapLoc;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Colors;
@@ -7,10 +8,13 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Lumina.Excel.Sheets;
 using System;
+using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Threading.Tasks;
 using XIVRusUpdater.Services;
+using XIVRusUpdater.Utils;
 using XIVRusUpdater.Utils.States;
 using XIVRusUpdater.Windows.Dialogs;
 
@@ -22,7 +26,7 @@ public class MainWindow : Window, IDisposable
     private readonly Plugin plugin;
     private Task? refreshTask;
     private Task? downloadTask;
-
+    
     private readonly ConfirmationPopup reloadPopup = new ConfirmationPopup("ReloadPopup");
 
     private enum OverallStatus
@@ -35,7 +39,7 @@ public class MainWindow : Window, IDisposable
     }
 
     public MainWindow(Plugin plugin, string goatImagePath)
-        : base("Update Window###XIVMain")
+        : base($"{Translations.MainWindowTitle}###XIVMain")
     {
         SizeConstraints = new WindowSizeConstraints
         {
@@ -51,8 +55,6 @@ public class MainWindow : Window, IDisposable
 
     public void Dispose() { }
 
-    private Vector4 GetBoolColor(bool @value) => value ? ImGuiColors.HealerGreen : ImGuiColors.DalamudRed;
-
     public override void Draw()
     {
         var state = Plugin.State;
@@ -61,24 +63,26 @@ public class MainWindow : Window, IDisposable
 
         ImGui.Spacing();
 
-        if (ImGui.CollapsingHeader("System Status", ImGuiTreeNodeFlags.DefaultOpen))
+        if (ImGui.CollapsingHeader(Translations.SystemStatusHeader, ImGuiTreeNodeFlags.DefaultOpen))
         {
-            ImGui.BulletText($"Penumbra: {(state.PenumbraEnabled ? "Enabled" : "Disabled")}");
+            ImGui.BulletText(string.Format(Translations.PenumbraStatus, state.PenumbraEnabled ? "Enabled" : "Disabled"));
 
-            ImGui.BulletText($"XIV Rus: {(state.ModInstalled ? "Installed" : "Not Installed")}");
+            ImGui.BulletText(string.Format(Translations.XIVRusStatus, state.ModInstalled ? "Installed" : "Not Installed"));
 
-            ImGui.BulletText($"Version: {state.InstalledVersion}");
+            ImGui.BulletText(string.Format(Translations.VersionStatus, state.InstalledVersion));
 
-            ImGui.BulletText($"Server Status: {state.Availability}");
+            ImGui.BulletText(string.Format(Translations.ServerStatus, state.Availability));
         }
 
-        if (ImGui.CollapsingHeader("Version Information", ImGuiTreeNodeFlags.DefaultOpen))
+        if (ImGui.CollapsingHeader(Translations.VersionHeader, ImGuiTreeNodeFlags.DefaultOpen))
         {
-            ImGui.Text($"Installed: {state.InstalledVersion}");
+            ImGui.Text(string.Format(Translations.GameVersion, Plugin.CurrentGameVersion));
 
-            ImGui.Text($"Latest: {plugin.Configuration.LastKnownRemoteVersion}");
+            ImGui.Text(string.Format(Translations.InstalledVersion, state.InstalledVersion));
 
-            ImGui.Text($"Last Check:");
+            ImGui.Text(string.Format(Translations.RemoteVersion, plugin.Configuration.LastKnownRemoteVersion));
+
+            ImGui.Text(Translations.LastCheck);
             ImGui.SameLine();
             ImGui.TextDisabled(
                 plugin.Configuration.LastUpdateCheck == default
@@ -86,9 +90,14 @@ public class MainWindow : Window, IDisposable
                     : plugin.Configuration.LastUpdateCheck.ToString("G"));
         }
 
-        if (ImGui.CollapsingHeader("Actions", ImGuiTreeNodeFlags.DefaultOpen))
+        if (ImGui.CollapsingHeader(Translations.ChangelogHeader, ImGuiTreeNodeFlags.DefaultOpen))
         {
-            if (ImGui.Button("Refresh", new Vector2(-1, 0)))
+            ImGui.TextWrapped(Plugin.State.LastChangelog ?? Translations.NoChangelog);
+        }
+
+        if (ImGui.CollapsingHeader(Translations.ActionsHeader, ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            if (ImGui.Button(Translations.RefreshButton, new Vector2(-1, 0)))
             {
                 refreshTask ??= Plugin.networkService.CheckForUpdates();
             }
@@ -104,7 +113,7 @@ public class MainWindow : Window, IDisposable
 
             using (ImRaii.Disabled(!updateAvailable || disabled))
             {
-                if (ImGui.Button("Update XIV Rus", new Vector2(-1, 0)))
+                if (ImGui.Button(Translations.UpdateButton, new Vector2(-1, 0)))
                 {
                     downloadTask ??= Plugin.networkService.DownloadLatestVersionAsync();
                 }
@@ -115,32 +124,32 @@ public class MainWindow : Window, IDisposable
                 downloadTask = null;
             }
 
-            if(ImGui.Button("Relaod game", new Vector2(-1, 0)))
+            if(ImGui.Button(Translations.ReloadButton, new Vector2(-1, 0)))
             {
                 reloadPopup.Open();
             }
 
             reloadPopup.Draw();
 
-            if (ImGui.Button("Open Settings", new Vector2(-1, 0)))
+            if (ImGui.Button(Translations.OpenConfigButton, new Vector2(-1, 0)))
             {
                 plugin.ToggleConfigUi();
             }
         }
 
-        if (ImGui.CollapsingHeader("Diagnostics"))
+        if (ImGui.CollapsingHeader(Translations.DiagnosticsHeader))
         {
-            ImGui.TextDisabled("Branch:");
+            ImGui.TextDisabled(Translations.Branch);
             ImGui.SameLine();
             ImGui.Text(plugin.Configuration.Channel.ToString());
 
-            ImGui.TextDisabled("Tester Key:");
+            ImGui.TextDisabled(Translations.TesterAllowance);
             ImGui.SameLine();
 
-            if (string.IsNullOrEmpty(plugin.Configuration.TesterKey))
-                ImGui.TextColored(ImGuiColors.DalamudYellow, "Not configured");
+            if (!plugin.Configuration.TesterHumanCheck)
+                ImGui.TextColored(ImGuiColors.DalamudYellow, Translations.TesterDenied);
             else
-                ImGui.TextColored(ImGuiColors.HealerGreen, "Configured");
+                ImGui.TextColored(ImGuiColors.HealerGreen, Translations.TesterAllowed);
         }
     }
 
@@ -153,9 +162,6 @@ public class MainWindow : Window, IDisposable
 
         if (state.Availability == NetworkService.AvailabilityStatus.Disabled)
             return OverallStatus.Disabled;
-
-        if (state.Availability == NetworkService.AvailabilityStatus.Warning)
-            return OverallStatus.Warning;
 
         if (plugin.Configuration.LastKnownRemoteVersion != plugin.Configuration.LastInstalledVersion)
             return OverallStatus.UpdateAvailable;
@@ -174,27 +180,22 @@ public class MainWindow : Window, IDisposable
         {
             case OverallStatus.Ok:
                 color = ImGuiColors.HealerGreen;
-                text = "XIV Rus is up to date";
+                text = Translations.StatusUpToDate;
                 break;
 
             case OverallStatus.UpdateAvailable:
                 color = ImGuiColors.DalamudYellow;
-                text = "Update available";
-                break;
-
-            case OverallStatus.Warning:
-                color = ImGuiColors.DalamudYellow;
-                text = "XIV Rus works but may be unstable on current patch";
+                text = Translations.StatusUpdateAvailable;
                 break;
 
             case OverallStatus.Disabled:
                 color = ImGuiColors.DalamudRed;
-                text = "XIV Rus temporarily disabled";
+                text = Translations.StatusDisabled;
                 break;
 
             default:
                 color = ImGuiColors.DalamudRed;
-                text = "Unable to determine status";
+                text = Translations.StatusError;
                 break;
         }
 

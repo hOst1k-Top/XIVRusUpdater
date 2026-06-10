@@ -28,7 +28,7 @@ public class Configuration : IPluginConfiguration
 
     #region Tester Access
 
-    public string TesterKey { get; set; } = string.Empty;
+    public bool TesterHumanCheck { get; set; }
 
     public UpdateChannel Channel { get; set; } = UpdateChannel.Stable;
 
