@@ -9,9 +9,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Updater.DTO;
 using XIVRusUpdater;
-using XIVRusUpdater.DTO;
+using XIVRusUpdater.Models;
 using XIVRusUpdater.Utils;
 using static XIVRusUpdater.Utils.HttpClientProgressExtensions;
 
@@ -20,19 +19,12 @@ namespace XIVRusUpdater.Services;
 public class NetworkService
 {
     private static readonly HttpClient Client = CreateClient();
-    private string GithubEndpoint => plugin.Configuration.Channel == UpdateChannel.Stable ? 
-        "https://api.github.com/repos/xivrus/xiv_ru_weblate/releases/latest" :
-        "https://api.github.com/repos/xivrus/xiv_ru_weblate/releases";
-
+    
     private readonly Plugin plugin;
-    private AvailabilityStatus? lastStatus;
-    private DateTime? lastStatusCheck;
-    private const double RefreshHours = 1;
-
+    
     public enum AvailabilityStatus
     {
         Available,
-        Warning,
         Disabled
     }
 
@@ -48,55 +40,40 @@ public class NetworkService
         return client;
     }
 
-    public async Task<AvailabilityStatus> GetStatusAsync(bool force = false)
+    public string CurrentBranch()
     {
-        var timeSinceCheck = (DateTime.Now - lastStatusCheck) ?? TimeSpan.MaxValue;
-        if (timeSinceCheck.TotalHours > RefreshHours || force)
-        {
-            using HttpResponseMessage responseMessage = await Client.GetAsync($"{Plugin.State.mod.API_BASE}/status.json");
-
-            responseMessage.EnsureSuccessStatusCode();
-
-            var jsonString = await responseMessage.Content.ReadAsStringAsync();
-
-            var xivstatus = JsonConvert.DeserializeObject<XIVStatus>(jsonString); ;
-
-            lastStatusCheck = DateTime.Now;
-            lastStatus = (AvailabilityStatus?)xivstatus?.status;
-            return lastStatus ?? AvailabilityStatus.Disabled;
-        }
-        else
-        {
-            return lastStatus ?? AvailabilityStatus.Disabled;
-        }
+        return plugin.Configuration.Channel == UpdateChannel.Beta ? $"{Plugin.State.mod.API_BASE}/branches/test" : $"{Plugin.State.mod.API_BASE}/branches/release";
     }
 
-    public async Task<GithubRelease> GetReleaseAsync()
+    public async Task<XIVStatus?> GetBranchStatus()
     {
-        var response = await Client.GetAsync(GithubEndpoint);
+        var branch = CurrentBranch();
 
-        response.EnsureSuccessStatusCode();
+        using HttpResponseMessage responseMessage = await Client.GetAsync(branch);
 
-        switch(plugin.Configuration.Channel)
-        {
-            case UpdateChannel.Stable:
-                var githubRelease = JsonConvert.DeserializeObject<GithubRelease>(await response.Content.ReadAsStringAsync());
-                return githubRelease ?? new GithubRelease();
-            case UpdateChannel.Beta:
-                var githubReleases = JsonConvert.DeserializeObject<List<GithubRelease>>(await response.Content.ReadAsStringAsync());
-                return githubReleases?.First() ?? new GithubRelease();
-        }
-        return new GithubRelease();
+        responseMessage.EnsureSuccessStatusCode();
+
+        var status = JsonConvert.DeserializeObject<XIVStatus>(await responseMessage.Content.ReadAsStringAsync());
+
+        return status;
+    }
+
+    public async Task<AvailabilityStatus> GetStatusAsync()
+    {
+        var xivstatus = await GetBranchStatus();
+
+        if (xivstatus?.GameVersion != Plugin.CurrentGameVersion) return AvailabilityStatus.Disabled;
+        else return AvailabilityStatus.Available;
     }
 
     public async Task<string?> GetLastRemoteVersionAsync()
     {
-        var response = await GetReleaseAsync();
-        if (response == default(GithubRelease)) return null;
+        var response = await GetBranchStatus();
+        if (response == default(XIVStatus)) return null;
 
-        Plugin.State.LastChangelog = response.Body;
+        Plugin.State.LastChangelog = response.Changelog;
 
-        return response.Name;
+        return response.RusVersion;
     }
 
     public async Task CheckForUpdates()
@@ -123,25 +100,22 @@ public class NetworkService
 
     public async Task DownloadLatestVersionAsync()
     {
-        var release = await GetReleaseAsync();
+        var release = await GetBranchStatus();
 
-        Plugin.Log.Debug("Download relase started");
+        if(release == default(XIVStatus)) return;
 
-        plugin.Configuration.LastInstalledVersion = release.Name;
+        plugin.Configuration.LastInstalledVersion = release.RusVersion;
         
-        var downloadInfo = release.Assets.FirstOrDefault(releas => releas.Name.EndsWith(".pmp"));
+        var downloadSource = await GetFastestSource(release.Urls);
 
-        Plugin.Log.Debug($"Download URL: {downloadInfo?.DownloadUrl}");
-        Plugin.Log.Debug($"File Name: {downloadInfo?.Name}");
-
-        if (downloadInfo == null) 
+        if (downloadSource == null)
             return;
 
-        var tempFile = $"{Plugin.PenumbraApi.GetDefaultDirectory()}/{downloadInfo.Name}";
+        Plugin.Log.Debug($"Download URL: {downloadSource.Url}");
+        
+        var tempFile = Path.Combine(Plugin.PenumbraApi.GetDefaultDirectory(), downloadSource.FileName);
 
-        Plugin.Log.Debug(tempFile);
-
-        var success = await DownloadModAsync(downloadInfo.BrowserDownloadUrl, tempFile);
+        var success = await DownloadModAsync(downloadSource.Url, tempFile);
 
         if (!success)
             return;
@@ -167,7 +141,7 @@ public class NetworkService
     {
         try
         {
-            Plugin.State.Availability = await GetStatusAsync(true);
+            Plugin.State.Availability = await GetStatusAsync();
 
             Plugin.State.PenumbraEnabled = Plugin.PenumbraApi.IsEnabled();
             Plugin.State.ModInstalled = Plugin.PenumbraApi.IsModInstalled(Plugin.State.mod.modName);
@@ -192,7 +166,7 @@ public class NetworkService
         }
     }
 
-    private static async Task<string?> GetFastestSource(IEnumerable<string> sources)
+    private static async Task<DownloadSourceInfo?> GetFastestSource(IEnumerable<string> sources)
     {
         var tasks = sources.Select(async source =>
         {
@@ -200,13 +174,13 @@ public class NetworkService
             try
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, source);
-                request.Headers.Range = new RangeHeaderValue(0, 1024 * 1024);
+                request.Headers.Range = new RangeHeaderValue(0, 10 * 1024 * 1024);
 
                 stopwatch.Start();
-                using var response = await Client.SendAsync(request);
+                using var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
                 if(!response.IsSuccessStatusCode)
-                    return (Url: source, SpeedMbps: 0.0, Success: false);
+                    return (Url: source, FileName: string.Empty, SpeedMbps: 0.0, Success: false);
 
                 byte[] content = await response.Content.ReadAsByteArrayAsync();
                 stopwatch.Stop();
@@ -214,11 +188,18 @@ public class NetworkService
                 double seconds = stopwatch.Elapsed.TotalSeconds;
                 double speedMBps = (content.Length / (1024*1024)) / seconds;
 
-                return (Url: source, SpeedMbps: speedMBps, Success: true);
+                string? fileName = response.Content.Headers.ContentDisposition?.FileNameStar ?? response.Content.Headers.ContentDisposition?.FileName;
+
+                if (string.IsNullOrWhiteSpace(fileName))
+                    fileName = Path.GetFileName(new Uri(source).AbsolutePath);
+
+                fileName = fileName?.Trim('"') ?? string.Empty;
+
+                return (Url: source, FileName: fileName, SpeedMbps: speedMBps, Success: true);
             }
             catch
             {
-                return (Url: source, SpeedMbps: 0.0, Success: false);
+                return (Url: source, FileName: string.Empty, SpeedMbps: 0.0, Success: false);
             }
         });
 
@@ -226,7 +207,14 @@ public class NetworkService
 
         var bestSource = results.Where(x => x.Success).OrderByDescending(x => x.SpeedMbps).FirstOrDefault();
 
-        return bestSource.Url ?? null;
+        if (!bestSource.Success)
+            return null;
+
+        return new DownloadSourceInfo
+        {
+            Url = bestSource.Url,
+            FileName = bestSource.FileName
+        };
     }
 
     public NetworkService(Plugin pluginRef)
@@ -271,5 +259,12 @@ public class NetworkService
             Plugin.State.ShowChangelog = true;
             state.IsDownloading = false;
         }
+    }
+
+    public sealed class DownloadSourceInfo
+    {
+        public string Url { get; init; } = string.Empty;
+
+        public string FileName { get; init; } = string.Empty;
     }
 }

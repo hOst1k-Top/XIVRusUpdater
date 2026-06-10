@@ -7,7 +7,7 @@ namespace XIVRusUpdater.Utils.States;
 
 public sealed class UpdaterState
 {
-    public IPenumbraMod mod { get; set; } = new IPenumbraMod("XIV Rus", "https://xivrus.ru/");
+    public IPenumbraMod mod { get; set; } = new IPenumbraMod("XIV Rus", "https://update.xivrus.ru/api");
     public DownloadState Download { get; set; } = new DownloadState();
 
     public NetworkService.AvailabilityStatus Availability { get; set; }

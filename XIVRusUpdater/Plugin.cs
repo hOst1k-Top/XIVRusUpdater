@@ -1,3 +1,5 @@
+using CheapLoc;
+using Dalamud;
 using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
@@ -8,8 +10,8 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
-using XIVRusUpdater.Windows;
 using XIVRusUpdater.Services;
 using XIVRusUpdater.Utils.States;
 using XIVRusUpdater.Windows;
@@ -20,10 +22,10 @@ public sealed class Plugin : IDalamudPlugin
 {
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
-    [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
+    [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
-
+    
     internal static PenumbraService PenumbraApi { get; private set; } = null!;
     internal static NetworkService networkService { get; private set; } = null!;
     internal static UpdaterState State { get; private set; } = null!;
@@ -46,9 +48,10 @@ public sealed class Plugin : IDalamudPlugin
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         networkService = new NetworkService(this);
         State = new UpdaterState();
-
+        InitLocalization();
+        
         Framework.Update += OnUpdate;
-
+        
         var iconPath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "icon.png");
 
         ConfigWindow = new ConfigWindow(this);
@@ -65,22 +68,43 @@ public sealed class Plugin : IDalamudPlugin
         {
             HelpMessage = "A useful message to display in /xlhelp"
         });
-
+        
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
-
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
-
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
+        PluginInterface.LanguageChanged += OnLanguageChanged;
 
         _ = networkService.CheckForUpdates();
     }
+
+    public void InitLocalization()
+    {
+        var lang = PluginInterface.UiLanguage;
+
+        var path = Path.Combine(
+            PluginInterface.AssemblyLocation.Directory!.FullName,
+            $"lang/{lang}.json");
+
+        if (!File.Exists(path))
+        {
+            Loc.SetupWithFallbacks(Assembly.GetExecutingAssembly());
+            return;
+        }
+
+        var json = File.ReadAllText(path);
+
+        Loc.Setup(json, Assembly.GetExecutingAssembly());
+    }
+
+    public static string CurrentGameVersion => DataManager.GameData.Repositories["ffxiv"].Version;
 
     public void Dispose()
     {
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
-        
+        PluginInterface.LanguageChanged -= OnLanguageChanged;
+
         WindowSystem.RemoveAllWindows();
 
         ConfigWindow.Dispose();
@@ -107,6 +131,11 @@ public sealed class Plugin : IDalamudPlugin
 
         DownloadWindow.IsOpen = State.Download.IsDownloading;
         Changelog.IsOpen = State.ShowChangelog;
+    }
+
+    private void OnLanguageChanged(string lang)
+    {
+        InitLocalization();
     }
 
     public void ToggleConfigUi() => ConfigWindow.Toggle();
