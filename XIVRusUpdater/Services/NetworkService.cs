@@ -84,11 +84,6 @@ public class NetworkService
 
         plugin.Configuration.LastSuccessfulUpdate = DateTime.Now;
 
-        if (Plugin.State.ModInstalled && Plugin.State.Availability == AvailabilityStatus.Disabled)
-        {
-            Plugin.State.mod.Enabled = false;
-        }
-
         if (!Plugin.State.UpdateAvailable)
             return;
 
@@ -102,9 +97,10 @@ public class NetworkService
     {
         var release = await GetBranchStatus();
 
-        if(release == default(XIVStatus)) return;
+        if(release == null) return;
 
-        plugin.Configuration.LastInstalledVersion = release.RusVersion;
+        if(release.RusVersion != null)
+            plugin.Configuration.LastInstalledVersion = release.RusVersion;
         
         var downloadSource = await GetFastestSource(release.Urls);
 

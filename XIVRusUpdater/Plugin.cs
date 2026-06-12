@@ -44,9 +44,9 @@ public sealed class Plugin : IDalamudPlugin
 
     public Plugin()
     {
+        networkService = new NetworkService(this);
         PenumbraApi = new PenumbraService(PluginInterface);
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-        networkService = new NetworkService(this);
         State = new UpdaterState();
         InitLocalization();
         
@@ -73,8 +73,6 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
         PluginInterface.LanguageChanged += OnLanguageChanged;
-
-        _ = networkService.CheckForUpdates();
     }
 
     public void InitLocalization()
